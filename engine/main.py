@@ -1,0 +1,184 @@
+from feature_extraction import extract_features
+from vector_builder import build_feature_vector
+from reference_engine import (
+    load_reference_data,
+    process_reference_library,
+    compute_genre_similarity,
+    infer_instruments,
+    evaluate_mix_quality,
+    analyze_features,
+    generate_suggestions
+)
+from production_feedback import generate_production_feedback
+from reference_matcher import find_closest_tracks
+from feature_names import FEATURE_NAMES, BASE_FEATURE_NAMES
+from mix_style import detect_mix_style
+
+
+import numpy as np
+
+
+def build_user_vector(features):
+    """
+    Convert extracted features into a vector compatible
+    with the reference engine.
+    """
+
+    vector = []
+
+    # Tempo
+    vector.append(features.get("tempo_bpm", 0))
+
+    # Spectral centroid
+    vector.append(features.get("spectral_centroid", 0))
+
+    # Spectral bandwidth
+    vector.append(features.get("spectral_bandwidth", 0))
+
+    # Zero crossing rate
+    vector.append(features.get("zero_crossing_rate", 0))
+
+    # RMS loudness
+    vector.append(features.get("loudness_rms", 0))
+
+    # Dynamic range
+    vector.append(features.get("dynamic_range", 0))
+
+    # Spectral rolloff
+    vector.append(features.get("spectral_rolloff", 0))
+
+    # Spectral contrast
+    vector.append(features.get("spectral_contrast", 0))
+
+    # Stereo width
+    vector.append(features.get("stereo_width", 0))
+
+    # Sub bass energy
+    vector.append(features.get("sub_bass_energy", 0))
+
+    # Transient density
+    vector.append(features.get("transient_density", 0))
+
+    # Silence ratio
+    vector.append(features.get("silence_ratio", 0))
+
+    # Frequency balance
+    freq_balance = features.get("frequency_balance", {})
+    vector.append(freq_balance.get("low", 0))
+    vector.append(freq_balance.get("mid", 0))
+    vector.append(freq_balance.get("high", 0))
+
+    return np.array(vector)
+
+
+
+def run_pipeline(audio_file):
+
+    print("\n--- Extracting Features ---")
+    features = extract_features(audio_file)
+
+    print("\n--- Building Feature Vector ---")
+    user_vector = build_feature_vector(features)
+
+    print("\n--- Loading Reference Library ---")
+    reference_library = load_reference_data()
+
+    for genre, tracks in reference_library.items():
+        print(f"{genre}: {len(tracks)} reference tracks")
+
+    print("\n--- Processing Reference Library ---")
+    processed_library, global_mean, global_std = process_reference_library(reference_library)
+
+    # Normalize user vector AFTER reference stats are known
+    user_vector = (user_vector - global_mean) / global_std
+    #user_vector = user_vector / (np.linalg.norm(user_vector) + 1e-10)
+
+    print("\nUser vector normalized using global reference statistics.")
+    #np.linalg.norm(user_vector)  # just to confirm it's not all zeros
+    print("First 10 values:", user_vector[:10])
+
+    print("\n--- Computing Similarity ---")
+    predicted_genre, similarity_scores = compute_genre_similarity(
+        user_vector,
+        processed_library
+    )
+
+    print("\n===== RESULT =====")
+
+    confidence = similarity_scores[predicted_genre] * 100
+
+    print(f"Predicted Genre: {predicted_genre}")
+    print(f"Confidence: {confidence:.2f}%")
+
+    print("\nGenre Probabilities:")
+
+    for genre, score in sorted(similarity_scores.items(), key=lambda x: x[1], reverse=True):
+        print(f"{genre}: {score*100:.2f}%")
+
+    if confidence < 40:
+        print("\n⚠ Low confidence prediction — track may be multi-genre.")
+
+    print("\n--- Instrument Detection ---")
+    instruments = infer_instruments(features)
+
+    for inst in instruments:
+        print("✓", inst)
+
+    print("\n--- Mix Quality ---")
+
+    mix_score, mix_label, issues = evaluate_mix_quality(features)
+
+    print(f"Score: {mix_score}/100")
+    print("Classification:", mix_label)
+
+    closest_tracks = find_closest_tracks(user_vector, processed_library)
+
+    print("\n---Closest Reference Tracks ---")
+    for sim, genre, idx in closest_tracks:
+        percent = round((sim+1)*50, 1)
+        print(f"{genre} reference track{idx+1} - Similarity: {percent}%")
+
+    
+    print("\nMix Issues:")
+    for issue in issues:
+        print("•", issue)
+
+    print("\n--- Feature Analysis ---")
+
+
+    strengths, weaknesses, balanced, z_scores = analyze_features(
+        user_vector,
+        processed_library,
+        predicted_genre,
+    )
+
+    mix_style = detect_mix_style(z_scores, FEATURE_NAMES)
+    
+    print("\n --- Mix Style ---")
+    
+    for k, v in mix_style.items():
+        print(f"{k}: {v}")
+
+
+    print("\nStrengths:")
+    for s in strengths[:5]:
+        print("✓", s)
+
+    print("\nWeaknesses:")
+    for w in weaknesses[:5]:
+        print("•", w)
+
+    print("\nBalanced Features:")
+    for b in balanced[:5]:
+        print("•", b)
+
+    print("\n--- Feedback ---")
+    feedback = generate_production_feedback(strengths, weaknesses, balanced)
+    for f in feedback:
+        print(f)
+
+if __name__ == "__main__":
+
+    audio_file = "dunno1.wav" # replace with your test file
+
+    run_pipeline(audio_file)
