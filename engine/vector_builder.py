@@ -4,46 +4,61 @@ def build_feature_vector(features):
 
     vector = []
 
-    vector.append(features.get("tempo_bpm", 0) * 2)
-    vector.append(features.get("tempo_stability", 0))
-    vector.append(features.get("onset_strength_mean", 0))
-    vector.append(features.get("onset_strength_std", 0))
+    # -------- TEMPO --------
+    vector.append(features["tempo_bpm"])
+    vector.append(features["tempo_stability"])
 
-    # Spectral features
-    vector.append(features.get("spectral_centroid", 0))
-    vector.append(features.get("spectral_bandwidth", 0))
-    vector.append(features.get("spectral_rolloff", 0))
-    
+    # -------- ENERGY --------
+    vector.append(features["harmonic_energy"])
+    vector.append(features["percussive_energy"])
+    vector.append(features["harmonic_percussive_ratio"])
 
-    # Loudness
-    vector.append(features.get("loudness_rms", 0))
-    vector.append(features.get("dynamic_range", 0))
-    vector.append(features.get("crest_factor", 0) * 0.5)
-    vector.append(features.get("LUFS", 0) * 0.7)
+    # -------- LOUDNESS --------
+    vector.append(features["loudness_rms"])
+    vector.append(features["LUFS"])
+    vector.append(features["crest_factor"])
+    vector.append(features["dynamic_range"])
+    vector.append(features["compression_ratio"])
 
-    # Mix features
-    vector.append(features.get("stereo_width", 0) * 0.5)
-    vector.append(features.get("sub_bass_energy", 0) * 0.7)
-    vector.append(features.get("transient_density", 0))
-    vector.append(features.get("silence_ratio", 0) * 0.3)
+    # -------- SPECTRAL --------
+    vector.append(features["spectral_centroid"])
+    vector.append(features["spectral_bandwidth"])
+    vector.append(features["spectral_rolloff"])
+    vector.append(features["spectral_flatness_mean"])
+    vector.append(features["spectral_flatness_std"])
+    vector.append(features["zero_crossing_rate"])
 
-    # Frequency balance
-    freq = features.get("frequency_balance", {})
-    vector.append(freq.get("low", 0))
-    vector.append(freq.get("mid", 0))
-    vector.append(freq.get("high", 0))
+    # -------- FLUX --------
+    vector.append(features["spectral_flux_mean"])
+    vector.append(features["spectral_flux_std"])
 
-    # MFCC
-    mfcc_mean = features.get("mfcc_mean", [0]*13)
-    mfcc_std = features.get("mfcc_std", [0]*13)
+    # -------- MIX --------
+    vector.append(features["stereo_width"])
+    vector.append(features["sub_bass_energy"])
 
-    vector.extend([m * 3 for m in mfcc_mean])
-    vector.extend([s * 3 for s in mfcc_std])
+    # -------- FREQUENCY BALANCE --------
+    vector.append(features["low_mid_ratio"])
+    vector.append(features["mid_high_ratio"])
 
-    # Spectral contrast
+    # -------- RHYTHM --------
+    vector.append(features["transient_density"])
+    vector.append(features["beat_strength"])
+    vector.append(features["onset_strength_mean"])
+    vector.append(features["onset_strength_std"])
+
+    # -------- SILENCE --------
+    vector.append(features["silence_ratio"])
+
+    # -------- MFCC --------
+    vector.extend(features["mfcc_mean"])
+    vector.extend(features["mfcc_std"])
+
+    # -------- CHROMA --------
+    vector.extend(features["chroma_mean"])
+    vector.extend(features["chroma_std"])
+
+    # -------- SPECTRAL CONTRAST --------
     vector.extend(features["spectral_contrast_mean"])
     vector.extend(features["spectral_contrast_std"])
-    vector.append(features.get("spectral_flatness_mean", 0))
-    vector.append(features.get("spectral_flatness_std", 0))
 
-    return np.array(vector, dtype=float)
+    return np.array(vector, dtype=np.float32)

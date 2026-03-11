@@ -83,8 +83,8 @@ def run_pipeline(audio_file):
     print("\n--- Loading Reference Library ---")
     reference_library = load_reference_data()
 
-    for genre, tracks in reference_library.items():
-        print(f"{genre}: {len(tracks)} reference tracks")
+    #for genre, tracks in reference_library.items():
+       # print(f"{genre}: {len(tracks)} reference tracks")
 
     print("\n--- Processing Reference Library ---")
     processed_library, global_mean, global_std = process_reference_library(reference_library)
@@ -93,9 +93,9 @@ def run_pipeline(audio_file):
     user_vector = (user_vector - global_mean) / global_std
     #user_vector = user_vector / (np.linalg.norm(user_vector) + 1e-10)
 
-    print("\nUser vector normalized using global reference statistics.")
+    #print("\nUser vector normalized using global reference statistics.")
     #np.linalg.norm(user_vector)  # just to confirm it's not all zeros
-    print("First 10 values:", user_vector[:10])
+    #print("First 10 values:", user_vector[:10])
 
     print("\n--- Computing Similarity ---")
     predicted_genre, similarity_scores = compute_genre_similarity(
