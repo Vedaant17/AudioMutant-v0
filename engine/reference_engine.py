@@ -131,6 +131,8 @@ def process_reference_library(reference_library):
 
     return processed_library, global_mean, global_std
 
+def normalize(v):
+    return v / (np.linalg.norm(v) + 1e-10)
 
 def compute_genre_similarity(user_vector, processed_library):
 

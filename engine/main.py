@@ -1,3 +1,7 @@
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from feature_extraction import extract_features
 from vector_builder import build_feature_vector
 from reference_engine import (
@@ -13,7 +17,7 @@ from production_feedback import generate_production_feedback
 from reference_matcher import find_closest_tracks
 from feature_names import FEATURE_NAMES, BASE_FEATURE_NAMES
 from mix_style import detect_mix_style
-
+from ai_agents.agent_pipeline import run_mix_agent
 
 import numpy as np
 
@@ -135,15 +139,15 @@ def run_pipeline(audio_file):
 
     print("\n---Closest Reference Tracks ---")
     for sim, genre, idx in closest_tracks:
-        percent = round((sim+1)*50, 1)
+        percent = round(sim*100, 1)
         print(f"{genre} reference track{idx+1} - Similarity: {percent}%")
 
     
-    print("\nMix Issues:")
+    """print("\nMix Issues:")
     for issue in issues:
         print("•", issue)
 
-    print("\n--- Feature Analysis ---")
+    print("\n--- Feature Analysis ---")"""
 
 
     strengths, weaknesses, balanced, z_scores = analyze_features(
@@ -154,7 +158,7 @@ def run_pipeline(audio_file):
 
     mix_style = detect_mix_style(z_scores, FEATURE_NAMES)
     
-    print("\n --- Mix Style ---")
+    """print("\n --- Mix Style ---")
     
     for k, v in mix_style.items():
         print(f"{k}: {v}")
@@ -170,15 +174,60 @@ def run_pipeline(audio_file):
 
     print("\nBalanced Features:")
     for b in balanced[:5]:
-        print("•", b)
+        print("•", b)"""
 
-    print("\n--- Feedback ---")
+    #print("\n--- Feedback ---")
     feedback = generate_production_feedback(strengths, weaknesses, balanced)
-    for f in feedback:
-        print(f)
+    #for f in feedback:
+        #print(f)
+
+    result = {
+    "feature_vector": user_vector.tolist(),
+    "predicted_genre": predicted_genre,
+    "confidence": confidence,
+
+    "genre_probabilities": similarity_scores,
+
+    "instrument_detection": instruments,
+
+    "mix_score": mix_score,
+    "mix_label": mix_label,
+    "mix_issues": issues,
+
+    "closest_reference_tracks": closest_tracks,
+
+    "mix_style": mix_style,
+
+    "strengths": strengths,
+    "weaknesses": weaknesses,
+    "balanced_features": balanced,
+
+    "production_feedback": feedback,
+
+    "reference_mean": processed_library[predicted_genre]["feature_mean"].tolist(),
+    "reference_std": processed_library[predicted_genre]["feature_std"].tolist(),
+    "feature_names": FEATURE_NAMES
+}
+
+    return result
+
+def display_results(result):
+
+    print("\n===== RESULT =====")
+
+    print("Predicted Genre:", result["predicted_genre"])
+    print("Confidence:", result["confidence"])
+
+    print("\n--- Mix Style ---")
+    for k,v in result["mix_style"].items():
+        print(f"{k}: {v}")
 
 if __name__ == "__main__":
 
-    audio_file = "dunno1.wav" # replace with your test file
+    audio_file = "Tame Impala - Dracula (Official Video).mp3" # replace with your test file
 
-    run_pipeline(audio_file)
+    engine_result = run_pipeline(audio_file)
+    ai_advice = run_mix_agent(engine_result)
+
+    print("\n ---AI Mix Engineer--\n")    
+    print(ai_advice)
