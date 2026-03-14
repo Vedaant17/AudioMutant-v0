@@ -18,7 +18,8 @@ from reference_matcher import find_closest_tracks
 from feature_names import FEATURE_NAMES, BASE_FEATURE_NAMES
 from mix_style import detect_mix_style
 from ai_agents.agent_pipeline import run_mix_agent
-
+from reference_comparison import get_reference_features, compute_reference_average, compare_mix, interpret_differences
+from change_simulator import run_mix_simulations
 import numpy as np
 
 
@@ -75,17 +76,17 @@ def build_user_vector(features):
     return np.array(vector)
 
 
-
 def run_pipeline(audio_file):
 
     print("\n--- Extracting Features ---")
     features = extract_features(audio_file)
 
     print("\n--- Building Feature Vector ---")
-    user_vector = build_feature_vector(features)
+    raw_user_vector = build_feature_vector(features)
 
     print("\n--- Loading Reference Library ---")
     reference_library = load_reference_data()
+
 
     #for genre, tracks in reference_library.items():
        # print(f"{genre}: {len(tracks)} reference tracks")
@@ -94,7 +95,7 @@ def run_pipeline(audio_file):
     processed_library, global_mean, global_std = process_reference_library(reference_library)
 
     # Normalize user vector AFTER reference stats are known
-    user_vector = (user_vector - global_mean) / global_std
+    user_vector = (raw_user_vector - global_mean) / global_std
     #user_vector = user_vector / (np.linalg.norm(user_vector) + 1e-10)
 
     #print("\nUser vector normalized using global reference statistics.")
@@ -107,8 +108,9 @@ def run_pipeline(audio_file):
         processed_library
     )
 
-    print("\n===== RESULT =====")
 
+    print("\n===== RESULT =====")
+    
     confidence = similarity_scores[predicted_genre] * 100
 
     print(f"Predicted Genre: {predicted_genre}")
@@ -136,16 +138,32 @@ def run_pipeline(audio_file):
     print("Classification:", mix_label)
 
     closest_tracks = find_closest_tracks(user_vector, processed_library)
+    print("\n--- Reference Mix Comparison ---")
+
+    reference_tracks = get_reference_features(
+    reference_library,
+    closest_tracks
+    )
+
+    reference_avg = compute_reference_average(reference_tracks)
+
+    differences = compare_mix(features, reference_avg)
+
+    reference_diagnostics = interpret_differences(differences)
+
+    for k, v in reference_diagnostics.items():
+        print(f"{k}: {v}")
 
     print("\n---Closest Reference Tracks ---")
     for sim, genre, idx in closest_tracks:
-        percent = round(sim*100, 1)
-        print(f"{genre} reference track{idx+1} - Similarity: {percent}%")
+        percent = sim*10
+        print(f"{genre} reference track{idx+1} - Similarity: {percent:.1f}%")
 
-    
+
     """print("\nMix Issues:")
     for issue in issues:
         print("•", issue)
+    
 
     print("\n--- Feature Analysis ---")"""
 
@@ -157,13 +175,23 @@ def run_pipeline(audio_file):
     )
 
     mix_style = detect_mix_style(z_scores, FEATURE_NAMES)
-    
-    """print("\n --- Mix Style ---")
-    
+    print("\n--- Mix Style ---")
     for k, v in mix_style.items():
         print(f"{k}: {v}")
 
+    reference_mean = processed_library[predicted_genre]["feature_mean"]
+    #reference_mean_raw = reference_mean * global_mean * global_std
+    simulation_results = run_mix_simulations(
+        raw_user_vector,
+        FEATURE_NAMES,
+        reference_mean
+    )
 
+    print("\n --- Predicted Results")
+    for k, v in simulation_results.items():
+        print(f"{k}: {v}")
+    
+    """
     print("\nStrengths:")
     for s in strengths[:5]:
         print("✓", s)
@@ -195,6 +223,7 @@ def run_pipeline(audio_file):
     "mix_issues": issues,
 
     "closest_reference_tracks": closest_tracks,
+    "reference_mix_analysis": reference_diagnostics,
 
     "mix_style": mix_style,
 
@@ -203,6 +232,8 @@ def run_pipeline(audio_file):
     "balanced_features": balanced,
 
     "production_feedback": feedback,
+    "simulation_results": simulation_results,
+
 
     "reference_mean": processed_library[predicted_genre]["feature_mean"].tolist(),
     "reference_std": processed_library[predicted_genre]["feature_std"].tolist(),
@@ -218,13 +249,10 @@ def display_results(result):
     print("Predicted Genre:", result["predicted_genre"])
     print("Confidence:", result["confidence"])
 
-    print("\n--- Mix Style ---")
-    for k,v in result["mix_style"].items():
-        print(f"{k}: {v}")
 
 if __name__ == "__main__":
 
-    audio_file = "Tame Impala - Dracula (Official Video).mp3" # replace with your test file
+    audio_file = "dunno2.wav" # replace with your test file
 
     engine_result = run_pipeline(audio_file)
     ai_advice = run_mix_agent(engine_result)

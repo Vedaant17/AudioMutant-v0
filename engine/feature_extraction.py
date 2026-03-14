@@ -126,6 +126,7 @@ def extract_features(file_path: str):
     mean_contrast = np.mean(contrast, axis=1)
     std_contrast = np.std(contrast, axis=1)
 
+
     # --------------------------------------------------
     # STFT BASED FEATURES
     # --------------------------------------------------
@@ -214,6 +215,7 @@ def extract_features(file_path: str):
         left = y[0]
         right = y[1]
         correlation = np.corrcoef(left,right)[0,1]
+        correlation = np.clip(correlation, -1, 1)
         stereo_width = float(1 - correlation)
     else:
         stereo_width = 0.0
