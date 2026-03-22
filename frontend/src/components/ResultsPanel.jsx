@@ -1,3 +1,5 @@
+import { useState } from "react"; // ✅ FIX
+
 import {
   Radar, RadarChart, PolarGrid,
   PolarAngleAxis, PolarRadiusAxis,
@@ -9,8 +11,10 @@ import WaveformPlayer from "./WaveformPlayer";
 import EQCurve from "./EQCurve";
 import FrequencyBars from "./FrequencyBars";
 
-export default function ResultsPanel({ result, file, audioUrl }) {
+export default function ResultsPanel({ result, file }) {
   if (!result) return null;
+
+  const [selectedIssue, setSelectedIssue] = useState(null);
 
   const radarData = result.simulation_results
     ? Object.entries(result.simulation_results).map(([key, value]) => ({
@@ -29,7 +33,29 @@ export default function ResultsPanel({ result, file, audioUrl }) {
 
   return (
     <div>
-      <WaveformPlayer file ={file} />
+      {/* ✅ Pass file instead of audioUrl */}
+      <WaveformPlayer file={file} onRegionClick={setSelectedIssue} />
+
+      {/* ✅ Side Panel */}
+      {selectedIssue && (
+        <div style={issuePanelStyle}>
+          <h2>⚠ {selectedIssue.message}</h2>
+          <p>
+            {selectedIssue.start.toFixed(1)}s – {selectedIssue.end.toFixed(1)}s
+          </p>
+
+          <h3>🎚 Suggested Fixes</h3>
+          <ul>
+            {selectedIssue.fixes.map((fix, i) => (
+              <li key={i}>{fix}</li>
+            ))}
+          </ul>
+
+          <button onClick={() => setSelectedIssue(null)}>
+            Close
+          </button>
+        </div>
+      )}
 
       <h1>🎧 Analysis Complete</h1>
 
@@ -110,4 +136,17 @@ const cardStyle = {
   padding: "15px",
   borderRadius: "10px",
   boxShadow: "0 0 10px rgba(0,0,0,0.5)"
+};
+
+const issuePanelStyle = {
+  position: "fixed",
+  right: 0,
+  top: 0,
+  width: "300px",
+  height: "100vh",
+  background: "#111",
+  color: "white",
+  padding: "20px",
+  boxShadow: "-5px 0 15px rgba(0,0,0,0.5)",
+  zIndex: 1000
 };

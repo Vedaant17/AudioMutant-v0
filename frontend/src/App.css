@@ -9,11 +9,10 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
 /* Container */
 .container {
   position: relative;
-  height: 100%;
+  height: 100vh;
   overflow: hidden;
 }
 
@@ -21,183 +20,90 @@ body {
 .bg-slide {
   position: absolute;
   inset: 0;
+
   background-size: cover;
   background-position: center;
 
   opacity: 0;
-  filter: blur(10px);
-  transform: scale(1);
+  transform: scale(1.1);
+  filter: blur(12px) brightness(0.6);
 
-  will-change: transform, opacity;
-
-  transition: opacity 1.5s ease, transform 6s ease, filter 1.5s ease;
+  transition:
+    opacity 1.8s ease-in-out,
+    transform 8s ease-in-out,
+    filter 1.8s ease-in-out;
 }
 
+/* Active slide */
 .bg-slide.active {
   opacity: 1;
-  filter: blur(0);
-  transform: scale(1.1);
+  transform: scale(1);
+  filter: blur(0px) brightness(0.75);
 }
 
-/* Overlay */
+/* Dark gradient overlay */
+.container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.4),
+    rgba(0,0,0,0.7)
+  );
+  z-index: 1;
+}
+
+/* Center content */
 .overlay {
   position: relative;
   z-index: 2;
 
   height: 100%;
-  width: 100%;
-
   display: flex;
-  justify-content: center;
   align-items: center;
-
-  background: rgba(0, 0, 0, 0.35);
+  justify-content: center;
 }
 
-.overlay::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: url("https://grainy-gradients.vercel.app/noise.svg");
-  opacity: 0.05;
-  pointer-events: none;
-  z-index: -1; /* FIXED */
-}
-
-/* Glass card */
+/* Glass UI card */
 .glass-card {
-  backdrop-filter: blur(30px); /* upgraded */
-  background: rgba(255, 255, 255, 0.05); /* cleaner glass */
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255,255,255,0.1);
 
-  border-radius: 20px;
-  gap: 10px;
   padding: 40px;
+  border-radius: 20px;
+
   text-align: center;
   color: white;
-  max-width: 500px;
 
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
 }
 
-/* Typography */
-h1 {
-  font-size: 48px;
+/* Heading */
+.glass-card h1 {
+  font-size: 2.8rem;
   margin-bottom: 10px;
 }
 
-.tagline {
-  font-size: 20px;
-  margin-bottom: 10px;
-  margin-top: 20px;
-}
-
-.subtext {
-  font-size: 14px;
-  opacity: 0.8;
-  margin-bottom: 25px;
-}
-
-/* Button */
+/* CTA button */
 .cta {
-  padding: 14px 28px;
-  font-size: 16px;
-  border-radius: 10px;
+  margin-top: 20px;
+  padding: 12px 24px;
+
   border: none;
+  border-radius: 10px;
+
+  background: linear-gradient(135deg, #22c55e, #4ade80);
+  color: black;
+  font-weight: bold;
+
   cursor: pointer;
-  margin-top: 30px;
 
-  background: linear-gradient(135deg, #7b5cff, #5e32e8);
-  color: white;
-
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(94, 50, 232, 0.5);
-}
-
-.cta:focus {
-  outline: none; /* FIXED */
-}
-
-/* Mode selector */
-.mode-selector {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.mode-selector button {
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.1);
-  border: none;
-  color: white;
-  cursor: pointer;
-}
-
-.mode-selector button:hover {
-  background: rgba(255,255,255,0.2); /* ADDED */
-}
-
-.mode-selector .active {
-  background: #00ffcc;
-  color: black;
-}
-
-/* AI Output */
-.ai-output {
-  white-space: pre-wrap;
-  margin-top: 10px;
-  line-height: 1.5;
-}
-
-/* Meter */
-.meter-bar {
-  width: 100%;
-  height: 10px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.meter-fill {
-  height: 100%;
-
-  /* PRO AUDIO GRADIENT */
-  background: linear-gradient(
-    90deg,
-    #00ffcc,
-    #00ff66,
-    #ffee00,
-    #ff4444
-  );
-
-  /* Glow */
-  box-shadow: 0 0 10px #00ffcc;
-
-  /* Smooth animation */
-  transition: width 0.5s ease;
-}
-
-/* Frequency bars (EQ style) */
-.freq-bars {
-  display: flex;
-  gap: 20px;
-  align-items: flex-end;
-}
-
-.bar {
-  width: 20px;
-  height: 100px; /* FIXED */
-  background: rgba(255,255,255,0.2);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.bar div {
-  height: 100%; /* FIXED */
-  background: linear-gradient(180deg, #00ffcc, #00ff66);
+  box-shadow: 0 10px 25px rgba(34,197,94,0.4);
 }

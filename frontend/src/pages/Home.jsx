@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../App.css";
 
 import img1 from "../assets/img1.jpg";
@@ -11,6 +12,14 @@ const images = [img1, img2, img4, img6, img7];
 
 export default function Home({ onUpload }) {
   const [index, setIndex] = useState(0);
+  const navigate = useNavigate();
+  const fileToBase64 = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+  });
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -40,9 +49,16 @@ export default function Home({ onUpload }) {
             id="fileInput"
             style={{ display: "none" }}
             onChange={(e) => {
-              const file = e.target.files[0];
-              if (file) onUpload(file);
-            }}
+  const file = e.target.files[0];
+  if (file) {
+    const url = URL.createObjectURL(file);
+
+    sessionStorage.setItem("audioUrl", url); // ✅ lightweight
+    onUpload(file);
+
+    navigate("/loading");
+  }
+}}
           />
 
           <button

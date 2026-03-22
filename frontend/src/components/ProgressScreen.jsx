@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function ProgressScreen({ file, onComplete }) {
   const [progress, setProgress] = useState(0);
   const [step, setStep] = useState("");
+  const navigate = useNavigate(); // ✅ ADD
 
   useEffect(() => {
     if (!file) return;
@@ -40,7 +42,9 @@ export default function ProgressScreen({ file, onComplete }) {
           );
           const result = await resultRes.json();
 
-          onComplete(result); // 🔥 THIS replaces navigation
+          onComplete(result);
+
+          navigate("/results"); // ✅ KEY FIX
         }
       }, 500);
     };
