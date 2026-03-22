@@ -1,0 +1,203 @@
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+}
+
+/* Global smoothing */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Container */
+.container {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Background slides */
+.bg-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+
+  opacity: 0;
+  filter: blur(10px);
+  transform: scale(1);
+
+  will-change: transform, opacity;
+
+  transition: opacity 1.5s ease, transform 6s ease, filter 1.5s ease;
+}
+
+.bg-slide.active {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1.1);
+}
+
+/* Overlay */
+.overlay {
+  position: relative;
+  z-index: 2;
+
+  height: 100%;
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("https://grainy-gradients.vercel.app/noise.svg");
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: -1; /* FIXED */
+}
+
+/* Glass card */
+.glass-card {
+  backdrop-filter: blur(30px); /* upgraded */
+  background: rgba(255, 255, 255, 0.05); /* cleaner glass */
+
+  border-radius: 20px;
+  gap: 10px;
+  padding: 40px;
+  text-align: center;
+  color: white;
+  max-width: 500px;
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Typography */
+h1 {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.tagline {
+  font-size: 20px;
+  margin-bottom: 10px;
+  margin-top: 20px;
+}
+
+.subtext {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-bottom: 25px;
+}
+
+/* Button */
+.cta {
+  padding: 14px 28px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  margin-top: 30px;
+
+  background: linear-gradient(135deg, #7b5cff, #5e32e8);
+  color: white;
+
+  transition: all 0.3s ease;
+}
+
+.cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(94, 50, 232, 0.5);
+}
+
+.cta:focus {
+  outline: none; /* FIXED */
+}
+
+/* Mode selector */
+.mode-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.mode-selector button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.mode-selector button:hover {
+  background: rgba(255,255,255,0.2); /* ADDED */
+}
+
+.mode-selector .active {
+  background: #00ffcc;
+  color: black;
+}
+
+/* AI Output */
+.ai-output {
+  white-space: pre-wrap;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+/* Meter */
+.meter-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+
+  /* PRO AUDIO GRADIENT */
+  background: linear-gradient(
+    90deg,
+    #00ffcc,
+    #00ff66,
+    #ffee00,
+    #ff4444
+  );
+
+  /* Glow */
+  box-shadow: 0 0 10px #00ffcc;
+
+  /* Smooth animation */
+  transition: width 0.5s ease;
+}
+
+/* Frequency bars (EQ style) */
+.freq-bars {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+}
+
+.bar {
+  width: 20px;
+  height: 100px; /* FIXED */
+  background: rgba(255,255,255,0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar div {
+  height: 100%; /* FIXED */
+  background: linear-gradient(180deg, #00ffcc, #00ff66);
+}

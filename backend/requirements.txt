@@ -1,0 +1,28 @@
+install# Core
+python-dotenv>=1.0
+pydantic>=2.6
+
+# Backend
+fastapi>=0.110
+uvicorn[standard]>=0.29
+
+# LLM stack
+langchain>=0.2
+langgraph>=0.0.40
+langchain-openai>=0.1
+langchain-anthropic>=0.1
+langchain-google-genai>=0.1
+
+# Vector store
+faiss-cpu>=1.7.4
+tiktoken>=0.6
+
+# DSP / Audio
+numpy>=1.26
+scipy>=1.12
+librosa>=0.10
+soundfile>=0.12
+matplotlib>=3.8
+
+# ML utilities (optional for DSP experimentation)
+scikit-learn>=1.4
